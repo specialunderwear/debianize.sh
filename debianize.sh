@@ -7,6 +7,8 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
       specified after -i. Use -i multiple times to specify multiple packages\n
    -f full path to fpm binary to use.\n
    -p full path to pip binary to use.\n
+\n
+All flags are optional\n
 '
 
 MAINTAINER="somebody@example.com"
