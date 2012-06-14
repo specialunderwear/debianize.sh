@@ -1,4 +1,13 @@
 #! /bin/bash
+HELP='
+Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
+   -m The maintainer string ("nobody <nobody@example.com>")\n
+   -i Using this flag makes following dependencies explicit. It will only\n
+      build dependencies listed in install_requires that match the regex\n
+      specified after -i. Use -i multiple times to specify multiple packages\n
+   -f full path to fpm binary to use.\n
+   -p full path to pip binary to use.\n
+'
 
 MAINTAINER="somebody@example.com"
 FOLLOW_DEPENDENCIES=""
@@ -24,8 +33,7 @@ while getopts ":m:i:p:f:" opt; do
       PIP_BIN=$OPTARG
       ;;
     \?)
-      echo "Invalid option: -$OPTARG" >&2
-      exit 1
+      echo -e $HELP >&2
       ;;
     :)
       echo "Option -$OPTARG requires an argument." >&2
