@@ -1,6 +1,38 @@
 #! /bin/bash
 
-MAINTAINER="{{ maintainer or 'somebody@example.com' }}"
+MAINTAINER="somebody@example.com"
+FOLLOW_DEPENDENCIES=""
+FPM_BIN="fpm"
+PIP_BIN="pip"
+
+while getopts ":m:i:p:f:" opt; do
+  case $opt in
+    m)
+      MAINTAINER=$OPTARG
+      ;;
+    i)
+      if [[ $FOLLOW_DEPENDENCIES == "" ]]; then
+          FOLLOW_DEPENDENCIES=$OPTARG
+      else
+          FOLLOW_DEPENDENCIES="$FOLLOW_DEPENDENCIES|$OPTARG"
+      fi
+      ;;
+    f)
+      FPM_BIN=$OPTARG
+      ;;
+    p)
+      PIP_BIN=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
 
 if [[ $EUID -ne 0 ]]; then
    echo "You must be root to build a debian package." 1>&2
@@ -13,7 +45,7 @@ rm -f *.deb
 
 # build package
 echo "building package."
-{{ fpm_path }}fpm --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
+$FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
@@ -24,7 +56,7 @@ if [ `which dpkg-deb` ]; then
         echo "building extra package in upstart dir"
         cd upstart
         CONFIG_FILES=`find etc -type f | grep -v svn | xargs -i% echo "--config-files=/%"`
-        {{ fpm_path }}fpm $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
+        $FPM_BIN $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
         mv $PACKAGE_NAME* ..
         cd ..
     fi
@@ -37,15 +69,15 @@ echo "Downloading dependencies."
 HASH=`openssl dgst -sha1 setup.py | cut -c 17-`
 PACKAGE_VAULT=/tmp/.$HASH
 mkdir -p $PACKAGE_VAULT
-{{ pip_path }}pip -q install --upgrade --no-install --build=$PACKAGE_VAULT -e .
+$PIP_BIN -q install --upgrade --no-install --build=$PACKAGE_VAULT -e .
 
 echo "processing dependencies."
 for NAME in `ls $PACKAGE_VAULT`
 do
     echo -n "package $NAME found in dependency chain, "
-    if [[ $NAME =~ {{ follow_dependencies|join('|') }} ]]; then
+    if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
         echo "BUILDING ...."
-        {{ fpm_path }}fpm --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
+        $FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
     fi
