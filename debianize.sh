@@ -7,16 +7,10 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
       specified after -i. Use -i multiple times to specify multiple packages\n
    -f full path to fpm binary to use.\n
    -p full path to pip binary to use.\n
+   -e Extra flags for fpm. anything behind -e will be passed to fpm as arguments.
 \n
 All flags are optional\n
 \n
-Any remaining arguments which are not in the above list of options, will be\n
-passed as arguments to fpm, eg;\n
-\n
-    debianize.sh -m"nobody <nobody@example.com>" -i slushpuppy --edit\n
-\n
-The --edit flag will be passed to fpm, which will cause it to show you the\n
-control file in your editor before finishing the package.\n
 '
 
 MAINTAINER="somebody@example.com"
