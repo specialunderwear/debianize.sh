@@ -22,9 +22,10 @@ control file in your editor before finishing the package.\n
 MAINTAINER="somebody@example.com"
 FOLLOW_DEPENDENCIES=""
 FPM_BIN="fpm"
+FPM_EXTRA_OPTS=""
 PIP_BIN="pip"
 
-while getopts ":m:i:p:f:" opt; do
+while getopts ":m:i:p:f:e:" opt; do
   case $opt in
     m)
       MAINTAINER=$OPTARG
@@ -41,6 +42,9 @@ while getopts ":m:i:p:f:" opt; do
       ;;
     p)
       PIP_BIN=$OPTARG
+      ;;
+	e)
+      FPM_EXTRA_OPTS="$FPM_EXTRA_OPTS $OPTARG"
       ;;
     \?)
       echo -e $HELP >&2
@@ -66,7 +70,7 @@ rm -f *.deb
 
 # build package
 echo "building package."
-$FPM_BIN "$@" --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
+$FPM_BIN $FPM_EXTRA_OPTS --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
@@ -77,7 +81,7 @@ if [ `which dpkg-deb` ]; then
         echo "building extra package in upstart dir"
         cd upstart
         CONFIG_FILES=`find etc -type f | grep -v svn | xargs -i% echo "--config-files=/%"`
-        $FPM_BIN "$@" $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
+        $FPM_BIN $FPM_EXTRA_OPTS $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
         mv $PACKAGE_NAME* ..
         cd ..
     fi
@@ -98,7 +102,7 @@ do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
         echo "BUILDING ...."
-        $FPM_BIN "$@" --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
+        $FPM_BIN $FPM_EXTRA_OPTS --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
     fi
