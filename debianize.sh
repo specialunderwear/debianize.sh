@@ -37,7 +37,7 @@ while getopts ":m:i:p:f:e:" opt; do
     p)
       PIP_BIN=$OPTARG
       ;;
-	e)
+    e)
       FPM_EXTRA_OPTS="$FPM_EXTRA_OPTS $OPTARG"
       ;;
     \?)
