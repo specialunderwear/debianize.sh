@@ -9,6 +9,14 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
    -p full path to pip binary to use.\n
 \n
 All flags are optional\n
+\n
+Any remaining arguments which are not in the above list of options, will be\n
+passed as arguments to fpm, eg;\n
+\n
+    debianize.sh -m"nobody <nobody@example.com>" -i slushpuppy --edit\n
+\n
+The --edit flag will be passed to fpm, which will cause it to show you the\n
+control file in your editor before finishing the package.\n
 '
 
 MAINTAINER="somebody@example.com"
@@ -44,6 +52,9 @@ while getopts ":m:i:p:f:" opt; do
   esac
 done
 
+# remove options from args
+shift $(($OPTIND - 1))
+
 if [[ $EUID -ne 0 ]]; then
    echo "You must be root to build a debian package." 1>&2
    exit 100
@@ -55,7 +66,7 @@ rm -f *.deb
 
 # build package
 echo "building package."
-$FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
+$FPM_BIN "$@" --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb setup.py
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
@@ -66,7 +77,7 @@ if [ `which dpkg-deb` ]; then
         echo "building extra package in upstart dir"
         cd upstart
         CONFIG_FILES=`find etc -type f | grep -v svn | xargs -i% echo "--config-files=/%"`
-        $FPM_BIN $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
+        $FPM_BIN "$@" $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
         mv $PACKAGE_NAME* ..
         cd ..
     fi
@@ -87,7 +98,7 @@ do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
         echo "BUILDING ...."
-        $FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
+        $FPM_BIN "$@" --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
     fi
