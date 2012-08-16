@@ -7,22 +7,24 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
       specified after -i. Use -i multiple times to specify multiple packages\n
    -f full path to fpm binary to use.\n
    -p full path to pip binary to use.\n
-   -e Extra flags for fpm. anything behind -e will be passed to fpm as arguments.
+\n   
 \n
 All flags are optional\n
+Anything after an unknown flag has been encountered, will be passed to fpm as arguments.\n
 \n
 '
 
 MAINTAINER="somebody@example.com"
 FOLLOW_DEPENDENCIES=""
 FPM_BIN="fpm"
-FPM_EXTRA_OPTS=()
 PIP_BIN="pip"
+LAST_OPTION=1
 
-while getopts ":m:i:p:f:e:" opt; do
+while getopts ":m:i:p:f:" opt; do
   case $opt in
     m)
       MAINTAINER=$OPTARG
+      LAST_OPTION=$OPTIND
       ;;
     i)
       if [[ $FOLLOW_DEPENDENCIES == "" ]]; then
@@ -30,18 +32,22 @@ while getopts ":m:i:p:f:e:" opt; do
       else
           FOLLOW_DEPENDENCIES="$FOLLOW_DEPENDENCIES|$OPTARG"
       fi
+      LAST_OPTION=$OPTIND
       ;;
     f)
       FPM_BIN=$OPTARG
+      LAST_OPTION=$OPTIND
       ;;
     p)
       PIP_BIN=$OPTARG
-      ;;
-    e)
-	  FPM_EXTRA_OPTS=("${FPM_EXTRA_OPTS[@]}" "$OPTARG")
+      LAST_OPTION=$OPTIND
       ;;
     \?)
-      echo -e $HELP >&2
+      if [[ $OPTARG =~ \?|h ]]; then
+          echo -e $HELP >&2
+          exit
+      fi
+      break
       ;;
     :)
       echo "Option -$OPTARG requires an argument." >&2
@@ -51,7 +57,7 @@ while getopts ":m:i:p:f:e:" opt; do
 done
 
 # remove options from args
-shift $(($OPTIND - 1))
+shift $(($LAST_OPTION - 1))
 
 if [[ $EUID -ne 0 ]]; then
    echo "You must be root to build a debian package." 1>&2
@@ -64,7 +70,7 @@ rm -f *.deb
 
 # build package
 echo "building package"
-$FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb "${FPM_EXTRA_OPTS[@]}" setup.py
+$FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb "$@" setup.py
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
