@@ -38,7 +38,7 @@ while getopts ":m:i:p:f:e:" opt; do
       PIP_BIN=$OPTARG
       ;;
     e)
-	  FPM_EXTRA_OPTS=("${FPM_EXTRA_OPTS[@]}" $OPTARG)
+	  FPM_EXTRA_OPTS=("${FPM_EXTRA_OPTS[@]}" "$OPTARG")
       ;;
     \?)
       echo -e $HELP >&2
@@ -75,7 +75,7 @@ if [ `which dpkg-deb` ]; then
         echo "building extra package in upstart dir"
         cd upstart
         CONFIG_FILES=`find etc -type f | grep -v svn | xargs -i% echo "--config-files=/%"`
-        $FPM_BIN $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all "${FPM_EXTRA_OPTS[@]}" *
+        $FPM_BIN $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
         mv $PACKAGE_NAME* ..
         cd ..
     fi
@@ -96,7 +96,7 @@ do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
         echo "BUILDING ...."
-        $FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb "${FPM_EXTRA_OPTS[@]}" $PACKAGE_VAULT/$NAME/setup.py
+        $FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
     fi
