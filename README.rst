@@ -24,3 +24,10 @@ Accepted flags
 
 All flags are optional.
 Anything after an unknown flag has been encountered, *will be passed to fpm as arguments*.
+
+Upstart
+-------
+
+If you've got a folder named ``upstart`` next to your setup.py, this folder
+will be packaged as well, with the same version number as your package, but
+adding a ``.d`` postfix to your package name.
