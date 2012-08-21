@@ -82,6 +82,10 @@ if [ `which dpkg-deb` ]; then
         cd upstart
         CONFIG_FILES=`find etc -type f | grep -v svn | xargs -i% echo "--config-files=/%"`
         $FPM_BIN $CONFIG_FILES -x ".svn*" -x "**.svn*" -x "**.svn**" --maintainer="$MAINTAINER" --category=misc -s dir -t deb -n "$PACKAGE_NAME.d" -v "$PACKAGE_VERSION" -d "$PACKAGE_NAME (= $PACKAGE_VERSION)" -a all *
+        if [ $? -ne 0 ]; then
+        	echo "error occured while building upstart-package"
+        	exit
+        fi 
         mv $PACKAGE_NAME* ..
         cd ..
     fi
