@@ -17,6 +17,26 @@ All flags are optional
 Anything after an unknown flag has been encountered, will be passed to fpm as arguments.
 
 EOF
+##############################################################################
+# Pre removal script
+##############################################################################
+PRERM_PATH="/tmp/${RANDOM}"
+
+cat > $PRERM_PATH <<- EOF
+#!/bin/sh
+set -e
+
+if which pyclean >/dev/null 2>&1; then
+	pyclean -p python-formencode 
+else
+	dpkg -L python-formencode | grep \.py$ | while read file
+	do
+		rm -f "${file}"[co] >/dev/null
+  	done
+fi
+EOF
+
+
 MAINTAINER="somebody@example.com"
 FOLLOW_DEPENDENCIES=""
 FPM_BIN="fpm"
@@ -73,7 +93,14 @@ rm -f *.deb
 
 # build package
 echo "building package"
-$FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb "$@" setup.py
+$FPM_BIN -s python -t deb \
+        --maintainer="$MAINTAINER" \
+        --exclude=*.pyc \
+        --exclude=*.pyo \
+        --depends=python \
+        --category=python \
+        --before-remove=$PRERM_PATH \
+        "$@" setup.py
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
@@ -109,7 +136,14 @@ do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
         echo "BUILDING ...."
-        $FPM_BIN --maintainer="$MAINTAINER" --exclude=*.pyc --exclude=*.pyo --depends=python --category=python -s python -t deb $PACKAGE_VAULT/$NAME/setup.py
+        $FPM_BIN -s python -t deb \
+                --maintainer="$MAINTAINER" \
+                --exclude=*.pyc \
+                --exclude=*.pyo \
+                --depends=python \
+                --category=python \
+                --before-remove=$PRERM_PATH \
+                $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
     fi
