@@ -28,9 +28,9 @@ cat > $PRERM_PATH <<- EOF
 set -e
 
 if which pyclean >/dev/null 2>&1; then
-	pyclean -p python-formencode 
+	pyclean -p <%= name %>
 else
-	dpkg -L python-formencode | grep \.py$ | while read file
+	dpkg -L <%= name %> | grep \.py$ | while read file
 	do
 		rm -f "${file}"[co] >/dev/null
   	done
@@ -113,6 +113,7 @@ $FPM_BIN -s python -t deb \
         --depends=python \
         --category=python \
         --before-remove=$PRERM_PATH \
+        --template-scripts \
         "$@" setup.py
 
 if [ `which dpkg-deb` ]; then
@@ -160,6 +161,7 @@ do
                 --depends=python \
                 --category=python \
                 --before-remove=$PRERM_PATH \
+                --template-scripts \
                 $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
