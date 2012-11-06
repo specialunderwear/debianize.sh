@@ -1,19 +1,22 @@
 #! /bin/bash
-HELP='
-Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo\n
-   -m The maintainer string ("nobody <nobody@example.com>")\n
-   -i Using this flag makes following dependencies explicit. It will only\n
-      build dependencies listed in install_requires that match the regex\n
-      specified after -i. Use -i multiple times to specify multiple packages\n
-   -f full path to fpm binary to use.\n
-   -p full path to pip binary to use.\n
-\n   
-\n
-All flags are optional\n
-Anything after an unknown flag has been encountered, will be passed to fpm as arguments.\n
-\n
-'
 
+##############################################################################
+# HELP
+##############################################################################
+read -d '' HELP <<- EOF
+Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo
+   -m The maintainer string ("nobody <nobody@example.com>")
+   -i Using this flag makes following dependencies explicit. It will only
+      build dependencies listed in install_requires that match the regex
+      specified after -i. Use -i multiple times to specify multiple packages
+   -f full path to fpm binary to use.
+   -p full path to pip binary to use.
+
+
+All flags are optional
+Anything after an unknown flag has been encountered, will be passed to fpm as arguments.
+
+EOF
 MAINTAINER="somebody@example.com"
 FOLLOW_DEPENDENCIES=""
 FPM_BIN="fpm"
@@ -44,7 +47,7 @@ while getopts ":m:i:p:f:" opt; do
       ;;
     \?)
       if [[ $OPTARG =~ \?|h ]]; then
-          echo -e $HELP >&2
+          echo "$HELP" >&2
           exit
       fi
       break
