@@ -114,6 +114,7 @@ $FPM_BIN -s python -t deb \
         --category=python \
         --before-remove=$PRERM_PATH \
         --template-scripts \
+        --python-install-lib=/usr/lib/python2.7/dist-packages/ \
         "$@" setup.py
 
 if [ `which dpkg-deb` ]; then
@@ -162,6 +163,7 @@ do
                 --category=python \
                 --before-remove=$PRERM_PATH \
                 --template-scripts \
+                --python-install-lib=/usr/lib/python2.7/dist-packages/ \
                 $PACKAGE_VAULT/$NAME/setup.py
     else
         echo "skipping ...."
