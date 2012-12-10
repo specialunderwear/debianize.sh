@@ -119,8 +119,8 @@ $FPM_BIN -s python -t deb \
 
 if [ `which dpkg-deb` ]; then
     # only do this if dpkg-deb is installed.
-    PACKAGE_VERSION=`dpkg-deb --info python-*.deb | grep Version | cut -c 11-`
-    PACKAGE_NAME=`dpkg-deb --info python-*.deb | grep Package | cut -c 11-`
+    PACKAGE_VERSION=`dpkg-deb --info *.deb | grep Version | cut -c 11-`
+    PACKAGE_NAME=`dpkg-deb --info *.deb | grep Package | cut -c 11-`
 
     if [ -d upstart ]; then
         echo "building extra package in upstart dir"
