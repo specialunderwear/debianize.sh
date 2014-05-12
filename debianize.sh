@@ -18,6 +18,7 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo
 
 All flags are optional
 Anything after an unknown flag has been encountered, will be passed to fpm as arguments.
+-i and -I are mutually exclusive.
 
 EOF
 
