@@ -19,11 +19,15 @@ Accepted flags
    -i Using this flag makes following dependencies explicit. It will only
       build dependencies listed in install_requires that match the regex
       specified after -i. Use -i multiple times to specify multiple packages
+   -I Use this flag to ignore a dependencies from being built. Packages that
+      match the regex specified after -I. Use -I multiple times add more ignore
+      regexes.
    -f full path to fpm binary to use.
    -p full path to pip binary to use.
 
 All flags are optional.
 Anything after an unknown flag has been encountered, *will be passed to fpm as arguments*.
+-i and -I are mutually exclusive.
 
 Upstart
 -------
