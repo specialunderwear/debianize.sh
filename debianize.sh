@@ -9,12 +9,16 @@ Usage: debianize.sh -m "nobody <nobody@example.com>" -i django -i buildthistoo
    -i Using this flag makes following dependencies explicit. It will only
       build dependencies listed in install_requires that match the regex
       specified after -i. Use -i multiple times to specify multiple packages
+   -I Use this flag to ignore a dependencies from being built. Packages that
+      match the regex specified after -I. Use -I multiple times add more ignore
+      regexes.
    -f full path to fpm binary to use.
    -p full path to pip binary to use.
 
 
 All flags are optional
 Anything after an unknown flag has been encountered, will be passed to fpm as arguments.
+-i and -I are mutually exclusive.
 
 EOF
 
@@ -47,12 +51,12 @@ FOLLOW_DEPENDENCIES=""
 FPM_BIN="fpm"
 PIP_BIN="pip"
 LAST_OPTION=1
-
+IGNORE_DEPENDENCIES=""
 
 ##############################################################################
 # OPTION PARSER
 ##############################################################################
-while getopts ":m:i:p:f:" opt; do
+while getopts ":m:i:I:p:f:" opt; do
   case $opt in
     m)
       MAINTAINER=$OPTARG
@@ -63,6 +67,14 @@ while getopts ":m:i:p:f:" opt; do
           FOLLOW_DEPENDENCIES=$OPTARG
       else
           FOLLOW_DEPENDENCIES="$FOLLOW_DEPENDENCIES|$OPTARG"
+      fi
+      LAST_OPTION=$OPTIND
+      ;;
+    I)
+      if [[ $IGNORE_DEPENDENCIES == "" ]]; then
+          IGNORE_DEPENDENCIES=$OPTARG
+      else
+          IGNORE_DEPENDENCIES="$IGNORE_DEPENDENCIES|$OPTARG"
       fi
       LAST_OPTION=$OPTIND
       ;;
@@ -154,6 +166,7 @@ for NAME in `ls $PACKAGE_VAULT`
 do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
+        if ! [[ $NAME =~ $IGNORE_DEPENDENCIES ]]; then
         echo "BUILDING ...."
         $FPM_BIN -s python -t deb \
                 --maintainer="$MAINTAINER" \
@@ -165,6 +178,9 @@ do
                 --template-scripts \
                 --python-install-lib=/usr/lib/python2.7/dist-packages/ \
                 $PACKAGE_VAULT/$NAME/setup.py
+        else
+            echo "Explicitly ignored, skipping ...."
+        fi
     else
         echo "skipping ...."
     fi
