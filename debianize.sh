@@ -166,7 +166,7 @@ for NAME in `ls $PACKAGE_VAULT`
 do
     echo -n "package $NAME found in dependency chain, "
     if [[ $NAME =~ $FOLLOW_DEPENDENCIES ]]; then
-        if ! [[ $NAME =~ $IGNORE_DEPENDENCIES ]]; then
+        if ! [[ $NAME =~ $IGNORE_DEPENDENCIES ]] || [[ $IGNORE_DEPENDENCIES == "" ]]; then
         echo "BUILDING ...."
         $FPM_BIN -s python -t deb \
                 --maintainer="$MAINTAINER" \
