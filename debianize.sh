@@ -159,7 +159,8 @@ echo "Downloading dependencies."
 HASH=`openssl dgst -sha1 setup.py | cut -c 17-`
 PACKAGE_VAULT=/tmp/.$HASH
 mkdir -p $PACKAGE_VAULT
-$PIP_BIN -q install --upgrade --no-install --no-use-wheel --build=$PACKAGE_VAULT -e .
+
+$PIP_BIN -q download --exists-action=i --no-binary=all --no-clean --build=$PACKAGE_VAULT -e .
 
 echo "processing dependencies."
 for NAME in `ls $PACKAGE_VAULT`
